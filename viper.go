@@ -694,9 +694,6 @@ func GetViper() *Viper {
 // Get returns an interface. For a specific value use one of the Get____ methods.
 func Get(key string) interface{} { return v.Get(key) }
 func (v *Viper) Get(key string) interface{} {
-	v.lock.RLock()
-	defer v.lock.RUnlock()
-
 	lcaseKey := strings.ToLower(key)
 	val := v.find(lcaseKey)
 	if val == nil {
@@ -976,6 +973,8 @@ func (v *Viper) BindFlagValues(flags FlagValueSet) (err error) {
 //
 func BindFlagValue(key string, flag FlagValue) error { return v.BindFlagValue(key, flag) }
 func (v *Viper) BindFlagValue(key string, flag FlagValue) error {
+	v.lock.Lock()
+	defer v.lock.Unlock()
 	if flag == nil {
 		return fmt.Errorf("flag for %q is nil", key)
 	}
@@ -989,6 +988,8 @@ func (v *Viper) BindFlagValue(key string, flag FlagValue) error {
 // EnvPrefix will be used when set when env name is not provided.
 func BindEnv(input ...string) error { return v.BindEnv(input...) }
 func (v *Viper) BindEnv(input ...string) error {
+	v.lock.Lock()
+	defer v.lock.Unlock()
 	var key, envkey string
 	if len(input) == 0 {
 		return fmt.Errorf("BindEnv missing key to bind to")
@@ -1013,6 +1014,8 @@ func (v *Viper) BindEnv(input ...string) error {
 // Viper will check to see if an alias exists first.
 // Note: this assumes a lower-cased key given.
 func (v *Viper) find(lcaseKey string) interface{} {
+	v.lock.RLock()
+	defer v.lock.RUnlock()
 
 	var (
 		val    interface{}
@@ -1163,6 +1166,8 @@ func (v *Viper) IsSet(key string) bool {
 // keys set in config, default & flags
 func AutomaticEnv() { v.AutomaticEnv() }
 func (v *Viper) AutomaticEnv() {
+	v.lock.Lock()
+	defer v.lock.Unlock()
 	v.automaticEnvApplied = true
 }
 
@@ -1171,6 +1176,8 @@ func (v *Viper) AutomaticEnv() {
 // not match it.
 func SetEnvKeyReplacer(r *strings.Replacer) { v.SetEnvKeyReplacer(r) }
 func (v *Viper) SetEnvKeyReplacer(r *strings.Replacer) {
+	v.lock.Lock()
+	defer v.lock.Unlock()
 	v.envKeyReplacer = r
 }
 
@@ -1184,6 +1191,8 @@ func (v *Viper) RegisterAlias(alias string, key string) {
 func (v *Viper) registerAlias(alias string, key string) {
 	alias = strings.ToLower(alias)
 	if alias != key && alias != v.realKey(key) {
+		v.lock.Lock()
+		defer v.lock.Unlock()
 		_, exists := v.aliases[alias]
 
 		if !exists {
@@ -1214,6 +1223,8 @@ func (v *Viper) registerAlias(alias string, key string) {
 }
 
 func (v *Viper) realKey(key string) string {
+	v.lock.RLock()
+	defer v.lock.RUnlock()
 	newkey, exists := v.aliases[key]
 	if exists {
 		jww.DEBUG.Println("Alias", key, "to", newkey)
@@ -1263,6 +1274,9 @@ func (v *Viper) Set(key string, value interface{}) {
 	lastKey := strings.ToLower(path[len(path)-1])
 	deepestMap := deepSearch(v.override, path[0:len(path)-1])
 
+	v.lock.Lock()
+	defer v.lock.Unlock()
+
 	// set innermost value
 	deepestMap[lastKey] = value
 }
@@ -1294,6 +1308,8 @@ func (v *Viper) ReadInConfig() error {
 		return err
 	}
 
+	v.lock.Lock()
+	defer v.lock.Unlock()
 	v.config = config
 	return nil
 }
@@ -1323,6 +1339,8 @@ func (v *Viper) MergeInConfig() error {
 // key does not exist in the file.
 func ReadConfig(in io.Reader) error { return v.ReadConfig(in) }
 func (v *Viper) ReadConfig(in io.Reader) error {
+	v.lock.Lock()
+	defer v.lock.Unlock()
 	v.config = make(map[string]interface{})
 	return v.unmarshalReader(in, v.config)
 }
@@ -1341,6 +1359,8 @@ func (v *Viper) MergeConfig(in io.Reader) error {
 // Note that the map given may be modified.
 func MergeConfigMap(cfg map[string]interface{}) error { return v.MergeConfigMap(cfg) }
 func (v *Viper) MergeConfigMap(cfg map[string]interface{}) error {
+	v.lock.Lock()
+	defer v.lock.Unlock()
 	if v.config == nil {
 		v.config = make(map[string]interface{})
 	}
@@ -1690,6 +1710,9 @@ func (v *Viper) WatchRemoteConfigOnChannel() error {
 
 // Retrieve the first found remote configuration.
 func (v *Viper) getKeyValueConfig() error {
+	v.lock.RLock()
+	defer v.lock.RUnlock()
+
 	if RemoteConfig == nil {
 		return RemoteConfigError("Enable the remote features by doing a blank import of the viper/remote package: '_ github.com/ory/viper/remote'")
 	}
@@ -1706,6 +1729,9 @@ func (v *Viper) getKeyValueConfig() error {
 }
 
 func (v *Viper) getRemoteConfig(provider RemoteProvider) (map[string]interface{}, error) {
+	v.lock.RLock()
+	defer v.lock.RUnlock()
+
 	reader, err := RemoteConfig.Get(provider)
 	if err != nil {
 		return nil, err
