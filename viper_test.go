@@ -245,7 +245,7 @@ func initDirs(t *testing.T) (string, string, func()) {
 	}
 }
 
-//stubs for PFlag Values
+// stubs for PFlag Values
 type stringValue string
 
 func newStringValue(val string, p *string) *stringValue {
@@ -763,7 +763,7 @@ func TestBindPFlag(t *testing.T) {
 	assert.Equal(t, testString, Get("testvalue"))
 
 	flag.Value.Set("testing_mutate")
-	flag.Changed = true //hack for pflag usage
+	flag.Changed = true // hack for pflag usage
 
 	assert.Equal(t, "testing_mutate", Get("testvalue"))
 
@@ -1748,6 +1748,13 @@ func TestWatchFile(t *testing.T) {
 		assert.Equal(t, "baz", v.Get("foo"))
 	})
 
+}
+
+func TestArrayOfObjects(t *testing.T) {
+	SetConfigFile("./stub/config.yaml")
+	require.NoError(t, ReadInConfig())
+	SetConfigFile("./stub/config.json")
+	require.NoError(t, WriteConfig())
 }
 
 func BenchmarkGetBool(b *testing.B) {
