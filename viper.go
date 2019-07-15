@@ -744,9 +744,6 @@ func (v *Viper) Get(key string) interface{} {
 // Sub is case-insensitive for a key.
 func Sub(key string) *Viper { return v.Sub(key) }
 func (v *Viper) Sub(key string) *Viper {
-	v.lock.Lock()
-	defer v.lock.Unlock()
-
 	subv := New()
 	data := v.Get(key)
 	if data == nil {

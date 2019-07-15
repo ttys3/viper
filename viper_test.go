@@ -1751,9 +1751,13 @@ func TestWatchFile(t *testing.T) {
 }
 
 func TestArrayOfObjects(t *testing.T) {
-	SetConfigFile("./stub/config.yaml")
-	require.NoError(t, ReadInConfig())
-	SetConfigFile("./stub/config.json")
+	SetConfigType("yml")
+	require.NoError(t, ReadConfig(bytes.NewBufferString(`foo:
+  bar:
+    - baz: 1
+    - baz: 2`)))
+
+	SetConfigFile(path.Join(os.TempDir(), fmt.Sprintf("config-%d.json", time.Now().UnixNano())))
 	require.NoError(t, WriteConfig())
 }
 
