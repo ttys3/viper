@@ -220,7 +220,7 @@ func deepSearch(m map[string]interface{}, path []string) map[string]interface{} 
 	return m
 }
 
-// toMapStringInterface is a workaround for https://github.com/ory/viper/issues/730
+// toMapStringInterface is a workaround for https://github.com/spf13/viper/issues/730
 // and https://github.com/go-yaml/yaml/issues/139
 func toMapStringInterface(in interface{}) interface{} {
 	switch t := in.(type) {

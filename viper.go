@@ -1708,7 +1708,7 @@ func (v *Viper) getKeyValueConfig() error {
 	defer v.lock.RUnlock()
 
 	if RemoteConfig == nil {
-		return RemoteConfigError("Enable the remote features by doing a blank import of the viper/remote package: '_ github.com/ory/viper/remote'")
+		return RemoteConfigError("Enable the remote features by doing a blank import of the viper/remote package: '_ github.com/spf13/viper/remote'")
 	}
 
 	for _, rp := range v.remoteProviders {

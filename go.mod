@@ -1,4 +1,4 @@
-module github.com/ory/viper
+module github.com/spf13/viper
 
 require (
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
